@@ -1,9 +1,9 @@
 [package]
 name = "adi-tasks-plugin"
-version = "0.8.3"
+version = "0.8.4"
 edition = "2021"
 license = "BSL-1.0"
-description = "ADI Tasks plugin providing MCP tools for task management"
+description = "ADI Tasks plugin providing CLI commands for task management"
 authors = ["ADI Team"]
 
 [lib]

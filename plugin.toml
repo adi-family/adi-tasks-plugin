@@ -1,18 +1,14 @@
 [plugin]
 id = "adi.tasks"
 name = "ADI Tasks"
-version = "0.8.3"
+version = "0.8.4"
 type = "core"
 author = "ADI Team"
 description = "Task management with dependency tracking and DAG visualization"
 min_host_version = "0.8.0"
 
 [[provides]]
-id = "adi.mcp.tools"
-version = "1.0.0"
-
-[[provides]]
-id = "adi.mcp.resources"
+id = "adi.cli.commands"
 version = "1.0.0"
 
 [tags]
