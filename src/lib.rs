@@ -46,7 +46,10 @@ extern "C" fn plugin_init(ctx: *mut PluginContext) -> i32 {
         );
 
         if let Err(code) = host.register_svc(cli_descriptor, cli_handle) {
-            host.error(&format!("Failed to register CLI commands service: {}", code));
+            host.error(&format!(
+                "Failed to register CLI commands service: {}",
+                code
+            ));
             return code;
         }
 
@@ -130,7 +133,9 @@ extern "C" fn cli_invoke(
                 {"name": "cycles", "description": "Detect dependency cycles", "usage": "cycles"},
                 {"name": "stats", "description": "Show task statistics", "usage": "stats"}
             ]);
-            RResult::ROk(RString::from(serde_json::to_string(&commands).unwrap_or_default()))
+            RResult::ROk(RString::from(
+                serde_json::to_string(&commands).unwrap_or_default(),
+            ))
         }
         _ => RResult::RErr(ServiceError::method_not_found(method.as_str())),
     }
@@ -234,9 +239,18 @@ fn run_cli_command(context_json: &str) -> Result<String, String> {
 
 fn cmd_list(tasks: &TaskManager, options: &serde_json::Value) -> Result<String, String> {
     let status_filter = options.get("status").and_then(|v| v.as_str());
-    let ready = options.get("ready").and_then(|v| v.as_bool()).unwrap_or(false);
-    let blocked = options.get("blocked").and_then(|v| v.as_bool()).unwrap_or(false);
-    let format = options.get("format").and_then(|v| v.as_str()).unwrap_or("text");
+    let ready = options
+        .get("ready")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let blocked = options
+        .get("blocked")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let format = options
+        .get("format")
+        .and_then(|v| v.as_str())
+        .unwrap_or("text");
 
     let task_list = if ready {
         tasks.get_ready().map_err(|e| e.to_string())?
@@ -337,7 +351,11 @@ fn cmd_show(tasks: &TaskManager, args: &[&str]) -> Result<String, String> {
         output.push_str(&format!("  Linked symbol: #{}\n", symbol_id));
     }
 
-    let scope = if task.is_global() { "global" } else { "project" };
+    let scope = if task.is_global() {
+        "global"
+    } else {
+        "project"
+    };
     output.push_str(&format!("  Scope: {}\n", scope));
 
     if !task_with_deps.depends_on.is_empty() {
@@ -429,7 +447,10 @@ fn cmd_undepend(tasks: &TaskManager, args: &[&str]) -> Result<String, String> {
     tasks
         .remove_dependency(TaskId(task_id), TaskId(depends_on))
         .map_err(|e| e.to_string())?;
-    Ok(format!("Removed dependency: #{} -> #{}", task_id, depends_on))
+    Ok(format!(
+        "Removed dependency: #{} -> #{}",
+        task_id, depends_on
+    ))
 }
 
 fn cmd_graph(tasks: &TaskManager, options: &serde_json::Value) -> Result<String, String> {
@@ -442,9 +463,7 @@ fn cmd_graph(tasks: &TaskManager, options: &serde_json::Value) -> Result<String,
     if format == "json" {
         let mut graph_data = Vec::new();
         for task in &all_tasks {
-            let deps = tasks
-                .get_dependencies(task.id)
-                .map_err(|e| e.to_string())?;
+            let deps = tasks.get_dependencies(task.id).map_err(|e| e.to_string())?;
             graph_data.push(json!({
                 "task": task,
                 "dependencies": deps.iter().map(|d| d.id.0).collect::<Vec<_>>()
@@ -469,9 +488,7 @@ fn cmd_graph(tasks: &TaskManager, options: &serde_json::Value) -> Result<String,
                 task.id.0, label, color
             ));
 
-            let deps = tasks
-                .get_dependencies(task.id)
-                .map_err(|e| e.to_string())?;
+            let deps = tasks.get_dependencies(task.id).map_err(|e| e.to_string())?;
             for dep in deps {
                 output.push_str(&format!("  {} -> {};\n", task.id.0, dep.id.0));
             }
@@ -496,9 +513,7 @@ fn cmd_graph(tasks: &TaskManager, options: &serde_json::Value) -> Result<String,
         };
         output.push_str(&format!("{} #{} {}\n", status_icon, task.id.0, task.title));
 
-        let deps = tasks
-            .get_dependencies(task.id)
-            .map_err(|e| e.to_string())?;
+        let deps = tasks.get_dependencies(task.id).map_err(|e| e.to_string())?;
         for (i, dep) in deps.iter().enumerate() {
             let prefix = if i == deps.len() - 1 {
                 "  └─"
@@ -561,11 +576,11 @@ fn cmd_blocked(tasks: &TaskManager) -> Result<String, String> {
     for task in blocked {
         output.push_str(&format!("✕ #{} {}\n", task.id.0, task.title));
 
-        let blockers = tasks
-            .get_dependencies(task.id)
-            .map_err(|e| e.to_string())?;
-        let incomplete_blockers: Vec<_> =
-            blockers.iter().filter(|t| !t.status.is_complete()).collect();
+        let blockers = tasks.get_dependencies(task.id).map_err(|e| e.to_string())?;
+        let incomplete_blockers: Vec<_> = blockers
+            .iter()
+            .filter(|t| !t.status.is_complete())
+            .collect();
 
         for blocker in incomplete_blockers {
             output.push_str(&format!(
@@ -607,7 +622,10 @@ fn cmd_stats(tasks: &TaskManager) -> Result<String, String> {
     let mut output = String::from("Task Statistics\n\n");
     output.push_str(&format!("  Total tasks:     {}\n", status.total_tasks));
     output.push_str(&format!("  Todo:            {}\n", status.todo_count));
-    output.push_str(&format!("  In Progress:     {}\n", status.in_progress_count));
+    output.push_str(&format!(
+        "  In Progress:     {}\n",
+        status.in_progress_count
+    ));
     output.push_str(&format!("  Done:            {}\n", status.done_count));
     output.push_str(&format!("  Blocked:         {}\n", status.blocked_count));
     output.push_str(&format!("  Cancelled:       {}\n", status.cancelled_count));

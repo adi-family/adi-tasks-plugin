@@ -1,7 +1,7 @@
 [plugin]
 id = "adi.tasks"
 name = "ADI Tasks"
-version = "0.8.7"
+version = "0.8.8"
 type = "core"
 author = "ADI Team"
 description = "Task management with dependency tracking and DAG visualization"
